@@ -2,6 +2,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#include "debug.h"
+
 int main(void) __attribute__((noreturn));
 
 int main(void)
@@ -13,7 +15,7 @@ int main(void)
 	DDRB |= _BV(DDB5);
 
 	// interrupt every 1s
-	OCR1A = 0x3D08;
+	OCR1A = F_CPU/1024;
 
 	// mode 4, CTC on OCR1A
 	TCCR1B |= (1 << WGM12);
@@ -35,8 +37,11 @@ ISR(TIMER1_COMPA_vect)
 	static uint8_t state = 0;
 	state = !state;
 
-	if (state)
+	if (state) {
 		PORTB |= _BV(PORTB5);
-	else
+		dprintf("Hello, ");
+	} else {
 		PORTB &= ~_BV(PORTB5);
+		dprintf("world!\n");
+	}
 }

@@ -7,13 +7,11 @@
 
 int main(void) __attribute__((noreturn));
 
-const uint8_t BLINK_HZ = 3;
+const uint16_t BLINKER_HZ = 1;
+const float BLINKER_DUTY_CYCLE = 0.7;
 
 /**
- * Toggles output pin B1 BLINK_HZ times per second.
- *
- * Done by the built-in timer which can be configured to toggle pin output
- * on compare match.
+ * Blinks PORTB1 with configurable duty cycle. Uses hardware PWM.
  */
 int main(void)
 {
@@ -22,11 +20,14 @@ int main(void)
 	/* set port B to output */
 	DDRB = 0xff;
 
-	/* Timer/Counter1 (the 16-bit one) setup */
-	TCCR1B = _BV(WGM12) /* clear timer on compare match mode */
-	       | _BV(CS12) | _BV(CS10); /* set prescaler to 1024 */
-	TCCR1A = _BV(COM1A0); /* toggle output on compare match */
-	OCR1A = F_CPU/1024/BLINK_HZ;
+	/*
+	 * Timer/Counter1 (the 16-bit one) setup: prescaler set to 1024,
+	 * non-inverting "Fast PWM" mode
+	 */
+	TCCR1A = _BV(WGM11) | _BV(COM1A1);
+	TCCR1B = _BV(WGM13) | _BV(CS12) | _BV(CS10);
+	ICR1 = F_CPU/1024/BLINKER_HZ;
+	OCR1A = BLINKER_DUTY_CYCLE*ICR1;
 
 	for (;;) {
 		sleep_enable();

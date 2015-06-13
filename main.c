@@ -7,6 +7,14 @@
 
 int main(void) __attribute__((noreturn));
 
+const uint8_t BLINK_HZ = 3;
+
+/**
+ * Toggles output pin B1 BLINK_HZ times per second.
+ *
+ * Done by the built-in timer which can be configured to toggle pin output
+ * on compare match.
+ */
 int main(void)
 {
 	cli();
@@ -15,11 +23,10 @@ int main(void)
 	DDRB = 0xff;
 
 	/* Timer/Counter1 (the 16-bit one) setup */
-	const uint16_t TIMER1_HZ = 3;
-	TCCR1B =  _BV(WGM12) /* clear timer on compare match mode */
-		| _BV(CS12) | _BV(CS10); /* set prescaler to 1024 */
-	OCR1A = F_CPU/1024/TIMER1_HZ;
-	TIMSK1 |= (1 << OCIE1A); /* enable timer interrupt */
+	TCCR1B = _BV(WGM12) /* clear timer on compare match mode */
+	       | _BV(CS12) | _BV(CS10); /* set prescaler to 1024 */
+	TCCR1A = _BV(COM1A0); /* toggle output on compare match */
+	OCR1A = F_CPU/1024/BLINK_HZ;
 
 	for (;;) {
 		sleep_enable();
@@ -27,27 +34,4 @@ int main(void)
 		sleep_cpu();
 		sleep_disable();
 	}
-}
-
-ISR(TIMER1_COMPA_vect)
-{
-	static uint8_t state = 0;
-	state = 1337*state + 7;
-	PORTB = 0;
-
-	switch (state % 3) {
-	case 0:
-		PORTB |= _BV(PORTB3);
-		break;
-
-	case 1:
-		PORTB |= _BV(PORTB4);
-		break;
-
-	case 2:
-		PORTB |= _BV(PORTB5);
-		break;
-	}
-
-	dprintf("PORTB = %x\n", PORTB);
 }

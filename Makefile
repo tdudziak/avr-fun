@@ -1,6 +1,6 @@
 CC=avr-gcc
 BAUD=57600
-CFLAGS=-Os -Wall -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DBAUD=${BAUD} -MMD -DUSB_VID=null
+CFLAGS=-Os -std=c99 -Wall -fno-exceptions -ffunction-sections -fdata-sections -mmcu=atmega328p -DF_CPU=16000000L -DBAUD=${BAUD} -MMD -DUSB_VID=null
 
 main.hex: main.elf
 	avr-objcopy -O ihex -R .eeprom $< $@

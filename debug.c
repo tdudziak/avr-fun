@@ -9,6 +9,11 @@ static int uart_putchar(char c, FILE* stream)
 	/* wait until data register is ready */
 	loop_until_bit_is_set(UCSR0A, UDRE0);
 	UDR0 = c;
+
+	/* follow \n with \r since that's what a serial terminal expects */
+	if (c == '\n')
+		uart_putchar('\r', stream);
+
 	return 0;
 }
 
